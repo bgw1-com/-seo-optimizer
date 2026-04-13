@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 const MODELS = {
   openai: [
@@ -76,6 +76,26 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
+  const [muted, setMuted] = useState(true);
+  const videoRef = useRef(null);
+
+  // 自动播放（静音），用户点击音乐按钮后取消静音
+  useEffect(() => {
+    const v = videoRef.current;
+    if (v) {
+      v.muted = true;
+      v.play().catch(() => {});
+    }
+  }, []);
+
+  const toggleMusic = useCallback(() => {
+    const v = videoRef.current;
+    if (v) {
+      v.muted = !v.muted;
+      setMuted(v.muted);
+      if (v.paused) v.play().catch(() => {});
+    }
+  }, []);
 
   function showToast(msg) {
     setToast(msg);
@@ -129,6 +149,18 @@ export default function Home() {
 
   return (
     <>
+      <video
+        ref={videoRef}
+        className="video-bg"
+        src="/bg-video.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+      />
+      <button className={`music-btn ${!muted ? 'playing' : ''}`} onClick={toggleMusic} title={muted ? '开启音乐' : '关闭音乐'}>
+        {muted ? '🔇' : '🔊'}
+      </button>
       <style>{`
         :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#242836;--border:#2e3345;--text:#e4e6ed;--text2:#9498a8;--accent:#6c5ce7;--accent2:#a29bfe;--green:#00b894;--orange:#fdcb6e;--red:#fd7979;--blue:#74b9ff}
         *{margin:0;padding:0;box-sizing:border-box}
@@ -138,12 +170,12 @@ export default function Home() {
         .header h1{font-size:28px;font-weight:700;margin-bottom:8px}
         .header h1 span{color:var(--accent2)}
         .header p{color:var(--text2);font-size:14px}
-        .settings-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px}
+        .settings-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:rgba(26,29,39,.85);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px}
         .settings-bar label{color:var(--text2);font-size:13px;white-space:nowrap}
         .settings-bar select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;outline:none}
         .main{display:grid;grid-template-columns:1fr 1fr;gap:20px}
         @media(max-width:800px){.main{grid-template-columns:1fr}}
-        .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+        .panel{background:rgba(26,29,39,.85);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
         .panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border)}
         .panel-header h2{font-size:15px;font-weight:600}
         .panel-body{padding:16px;flex:1;display:flex;flex-direction:column;gap:14px}
@@ -192,6 +224,11 @@ export default function Home() {
         .placeholder p{font-size:13px;line-height:1.6}
         .loading{text-align:center;padding:40px}
         .loading p{color:var(--text2);font-size:13px}
+        .video-bg{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;opacity:.35}
+        .music-btn{position:fixed;top:20px;right:20px;z-index:100;width:44px;height:44px;border-radius:50%;background:rgba(108,92,231,.8);border:2px solid rgba(162,155,254,.5);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+        .music-btn:hover{background:rgba(108,92,231,1);transform:scale(1.1)}
+        .music-btn.playing{animation:pulse-ring 2s ease-out infinite}
+        @keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(108,92,231,.5)}70%{box-shadow:0 0 0 10px rgba(108,92,231,0)}100%{box-shadow:0 0 0 0 rgba(108,92,231,0)}}
       `}</style>
 
       <div className="container">
