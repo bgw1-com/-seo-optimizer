@@ -1,24 +1,10 @@
 import { NextResponse } from 'next/server';
 
-// API Key 从环境变量读取，用户看不到
-const API_KEYS = {
-  openai: process.env.OPENAI_API_KEY,
-  claude: process.env.ANTHROPIC_API_KEY,
-  deepseek: process.env.DEEPSEEK_API_KEY,
-  grok: process.env.GROK_API_KEY,
-};
-
-const ENDPOINTS = {
-  openai: 'https://api.openai.com/v1/chat/completions',
-  claude: 'https://api.anthropic.com/v1/messages',
-  deepseek: 'https://api.deepseek.com/v1/chat/completions',
-  grok: 'https://api.x.ai/v1/chat/completions',
-};
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const ENDPOINT = 'https://api.openai.com/v1/chat/completions';
 
 // 模型 fallback 列表：如果第一个不可用，尝试下一个
-const MODEL_FALLBACKS = {
-  openai: ['gpt-5.4', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'],
-};
+const MODEL_FALLBACKS = ['gpt-5.4', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'];
 
 // 简单的速率限制：每个 IP 每分钟最多 10 次请求
 const rateLimit = new Map();
@@ -37,12 +23,12 @@ function checkRateLimit(ip) {
   return true;
 }
 
-async function callOpenAICompatible(endpoint, apiKey, model, prompt) {
-  const resp = await fetch(endpoint, {
+async function callOpenAI(model, prompt) {
+  const resp = await fetch(ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
+      'Authorization': `Bearer ${OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
       model,
@@ -61,91 +47,46 @@ async function callOpenAICompatible(endpoint, apiKey, model, prompt) {
 
 export async function POST(request) {
   try {
-    // 速率限制
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
     if (!checkRateLimit(ip)) {
       return NextResponse.json({ error: '请求过于频繁，请稍后再试（每分钟最多10次）' }, { status: 429 });
     }
 
-    const { provider, model, prompt } = await request.json();
+    const { model, prompt } = await request.json();
 
-    if (!provider || !model || !prompt) {
+    if (!model || !prompt) {
       return NextResponse.json({ error: '缺少必要参数' }, { status: 400 });
     }
 
-    const apiKey = API_KEYS[provider];
-    if (!apiKey) {
-      return NextResponse.json({ error: `未配置 ${provider} 的 API Key，请联系管理员` }, { status: 500 });
+    if (!OPENAI_API_KEY) {
+      return NextResponse.json({ error: '未配置 OpenAI API Key，请联系管理员' }, { status: 500 });
     }
 
-    let responseText;
+    // 先用用户选的模型，失败则尝试 fallback
+    const modelsToTry = [model, ...MODEL_FALLBACKS.filter(m => m !== model)];
+    let lastError = '';
 
-    if (provider === 'claude') {
-      const resp = await fetch(ENDPOINTS.claude, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: 4096,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
+    for (const tryModel of modelsToTry) {
+      const result = await callOpenAI(tryModel, prompt);
 
-      if (!resp.ok) {
-        const err = await resp.text();
-        console.error('Claude API Error:', err);
-        return NextResponse.json({ error: `Claude 请求失败 (${resp.status}): ${err.substring(0, 200)}` }, { status: resp.status });
-      }
-
-      const data = await resp.json();
-      responseText = data.content[0].text;
-
-    } else {
-      const endpoint = ENDPOINTS[provider];
-
-      // 先用用户选的模型，失败则尝试 fallback
-      let modelsToTry = [model];
-      if (provider === 'openai' && MODEL_FALLBACKS.openai) {
-        // 加入 fallback，但去重
-        modelsToTry = [model, ...MODEL_FALLBACKS.openai.filter(m => m !== model)];
-      }
-
-      let lastError = '';
-      let success = false;
-
-      for (const tryModel of modelsToTry) {
-        const result = await callOpenAICompatible(endpoint, apiKey, tryModel, prompt);
-
-        if (result.ok) {
-          try {
-            const data = JSON.parse(result.body);
-            responseText = data.choices[0].message.content;
-            success = true;
-            break;
-          } catch (e) {
-            lastError = `响应解析失败: ${result.body.substring(0, 200)}`;
-          }
-        } else {
-          lastError = `模型 ${tryModel} 失败 (${result.status}): ${result.body.substring(0, 200)}`;
-          console.error(lastError);
-          // 如果是认证错误(401)或限额错误(429)，不用再试其他模型
-          if (result.status === 401 || result.status === 429) {
-            return NextResponse.json({ error: lastError }, { status: result.status });
-          }
-          // 400 可能是模型不存在，继续尝试下一个
+      if (result.ok) {
+        try {
+          const data = JSON.parse(result.body);
+          return NextResponse.json({ result: data.choices[0].message.content });
+        } catch (e) {
+          lastError = `响应解析失败`;
+        }
+      } else {
+        lastError = `模型 ${tryModel} 失败 (${result.status}): ${result.body.substring(0, 200)}`;
+        console.error(lastError);
+        // 认证错误或限额错误，不再重试
+        if (result.status === 401 || result.status === 429) {
+          return NextResponse.json({ error: lastError }, { status: result.status });
         }
       }
-
-      if (!success) {
-        return NextResponse.json({ error: lastError || 'AI 服务请求失败' }, { status: 500 });
-      }
     }
 
-    return NextResponse.json({ result: responseText });
+    return NextResponse.json({ error: lastError || 'AI 服务请求失败' }, { status: 500 });
   } catch (err) {
     console.error('API Error:', err);
     return NextResponse.json({ error: `服务器错误: ${err.message}` }, { status: 500 });

@@ -8,19 +8,6 @@ const MODELS = {
     { value: 'gpt-5.3', label: 'GPT-5.3' },
     { value: 'gpt-4.1', label: 'GPT-4.1' },
   ],
-  claude: [
-    { value: 'claude-sonnet-4-5-20250514', label: 'Claude Sonnet 4.5' },
-    { value: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5' },
-  ],
-  deepseek: [
-    { value: 'deepseek-chat', label: 'DeepSeek Chat' },
-    { value: 'deepseek-reasoner', label: 'DeepSeek Reasoner' },
-  ],
-  grok: [
-    { value: 'grok-3', label: 'Grok 3' },
-    { value: 'grok-3-mini', label: 'Grok 3 Mini' },
-    { value: 'grok-2', label: 'Grok 2' },
-  ],
 };
 
 function buildPrompt(title, content, keywords, articleType, lang) {
@@ -114,7 +101,7 @@ export default function Home() {
       const resp = await fetch('/api/optimize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, model, prompt }),
+        body: JSON.stringify({ model, prompt }),
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error || 'API 请求失败');
@@ -214,13 +201,6 @@ export default function Home() {
         </div>
 
         <div className="settings-bar">
-          <label>AI 服务：</label>
-          <select value={provider} onChange={e => handleProviderChange(e.target.value)}>
-            <option value="openai">OpenAI (GPT)</option>
-            <option value="claude">Claude (Anthropic)</option>
-            <option value="deepseek">DeepSeek</option>
-            <option value="grok">Grok (xAI)</option>
-          </select>
           <label>模型：</label>
           <select value={model} onChange={e => setModel(e.target.value)}>
             {MODELS[provider].map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
