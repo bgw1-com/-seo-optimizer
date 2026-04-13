@@ -12,12 +12,28 @@ const MODELS = {
 
 function buildPrompt(title, content, keywords, articleType, lang) {
   const langLabel = lang === 'zh' ? '中文' : 'English';
-  return `你是一位资深的 SEO 专家和内容优化顾问。请用${langLabel}回答。
+  const typeMap = {
+    story: '成人小说/故事',
+    venue: '场所推荐/攻略',
+    news: '资讯/新闻',
+    guide: '生活指南/科普',
+    review: '测评/体验',
+    listicle: '榜单/合集',
+    community: '社区/交友',
+  };
+  return `你是一位资深的 SEO 专家，专门服务于成人内容领域（以GAY群体为主要受众）。请用${langLabel}回答。
+
+你需要理解这个领域的特殊性：
+- 成人内容的SEO需要巧妙使用关键词，既要吸引目标用户又要考虑搜索引擎的内容政策
+- 标题要有吸引力和暗示性，但不能过于直白以避免被搜索引擎降权
+- 需要善用长尾关键词和隐晦表达来提升搜索可见性
+- GAY社区有自己的术语、热门话题和搜索习惯，优化时要考虑这些
 
 请对以下文章进行全面的 SEO 优化分析。
 
 【文章标题】${title}
-【文章类型】${articleType}
+【文章类型】${typeMap[articleType] || articleType}
+【目标受众】GAY群体
 【目标关键词】${keywords || '未指定，请自行提取'}
 【文章内容】
 ${content.substring(0, 4000)}
@@ -70,7 +86,7 @@ export default function Home() {
   const [title, setTitle] = useState('');
   const [keywords, setKeywords] = useState('');
   const [content, setContent] = useState('');
-  const [articleType, setArticleType] = useState('blog');
+  const [articleType, setArticleType] = useState('story');
   const [tab, setTab] = useState('overview');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -106,9 +122,9 @@ export default function Home() {
   }
 
   function loadExample() {
-    setTitle('如何在30天内养成健康饮食习惯');
-    setContent('很多人都想改善自己的饮食习惯，但往往不知道从何下手。本文将为你提供一套完整的30天饮食改善计划，帮助你循序渐进地建立健康的饮食模式。\n\n第一周：认识你的饮食现状\n首先，我们需要了解自己目前的饮食情况。记录每天吃的食物，包括正餐和零食。这个过程会帮助你发现饮食中的问题。\n\n第二周：逐步替换不健康食物\n不要试图一次性改变所有饮食习惯。每天替换一种不健康的食物，比如用水果代替甜点，用坚果代替薯片。\n\n第三周：建立规律的饮食时间\n固定的用餐时间有助于调节身体的代谢节律。尽量在固定的时间吃早餐、午餐和晚餐。\n\n第四周：巩固和优化\n回顾过去三周的进展，找到适合自己的饮食节奏。这个阶段重点是让健康饮食成为自然而然的习惯。');
-    setKeywords('健康饮食, 饮食习惯, 30天计划');
+    setTitle('2026年全国GAY友好场所推荐指南');
+    setContent('随着社会观念的进步，越来越多的城市出现了对GAY群体友好的社交场所。本文整理了2026年最受欢迎的GAY友好场所，涵盖酒吧、咖啡厅、健身房等多种类型。\n\n一、北京地区\n北京作为首都，拥有最丰富的GAY友好场所资源。三里屯、工体周边是传统的聚集区域，近年来五道口、望京等区域也涌现出不少新去处。\n\n二、上海地区\n上海的开放氛围使得GAY场所文化更加多元。从安福路的精品咖啡店到外滩的高端酒吧，选择非常丰富。\n\n三、成都地区\n成都以其包容的城市文化著称，太古里、九眼桥周边是年轻人最爱的社交区域。\n\n四、出行建议\n选择场所时建议提前通过社交平台了解最新信息，注意安全社交。');
+    setKeywords('GAY友好场所, 同志酒吧, GAY社交');
   }
 
   async function optimize() {
@@ -274,12 +290,13 @@ export default function Home() {
               <div className="field">
                 <label>文章类型</label>
                 <select value={articleType} onChange={e => setArticleType(e.target.value)}>
-                  <option value="blog">博客文章</option>
-                  <option value="news">新闻资讯</option>
-                  <option value="tutorial">教程指南</option>
-                  <option value="review">评测/测评</option>
-                  <option value="listicle">清单文章</option>
-                  <option value="opinion">观点/评论</option>
+                  <option value="story">成人小说/故事</option>
+                  <option value="venue">场所推荐/攻略</option>
+                  <option value="news">资讯/新闻</option>
+                  <option value="guide">生活指南/科普</option>
+                  <option value="review">测评/体验</option>
+                  <option value="listicle">榜单/合集</option>
+                  <option value="community">社区/交友</option>
                 </select>
               </div>
               <button className="btn btn-primary" onClick={optimize} disabled={loading} style={{width:'100%',justifyContent:'center'}}>
