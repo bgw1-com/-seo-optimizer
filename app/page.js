@@ -76,24 +76,24 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
-  const [muted, setMuted] = useState(true);
+  const [playing, setPlaying] = useState(false);
   const videoRef = useRef(null);
+  const audioRef = useRef(null);
 
-  // 自动播放（静音），用户点击音乐按钮后取消静音
+  // 视频自动静音播放
   useEffect(() => {
     const v = videoRef.current;
-    if (v) {
-      v.muted = true;
-      v.play().catch(() => {});
-    }
+    if (v) { v.muted = true; v.play().catch(() => {}); }
   }, []);
 
   const toggleMusic = useCallback(() => {
-    const v = videoRef.current;
-    if (v) {
-      v.muted = !v.muted;
-      setMuted(v.muted);
-      if (v.paused) v.play().catch(() => {});
+    const a = audioRef.current;
+    if (!a) return;
+    if (a.paused) {
+      a.play().then(() => setPlaying(true)).catch(() => {});
+    } else {
+      a.pause();
+      setPlaying(false);
     }
   }, []);
 
@@ -149,17 +149,12 @@ export default function Home() {
 
   return (
     <>
-      <video
-        ref={videoRef}
-        className="video-bg"
-        src="/bg-video.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-      />
-      <button className={`music-btn ${!muted ? 'playing' : ''}`} onClick={toggleMusic} title={muted ? '开启音乐' : '关闭音乐'}>
-        {muted ? '🔇' : '🔊'}
+      <video ref={videoRef} className="video-bg" src="/bg-video.mp4" autoPlay loop muted playsInline />
+      <audio ref={audioRef} src="/bg-music.mp3" loop preload="auto" />
+      <button className={`music-btn ${playing ? 'playing' : ''}`} onClick={toggleMusic}>
+        <span className="music-note">♪</span>
+        <span className="music-label">音乐</span>
+        <span className="music-play">{playing ? '❚❚' : '▶'}</span>
       </button>
       <style>{`
         :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#242836;--border:#2e3345;--text:#e4e6ed;--text2:#9498a8;--accent:#6c5ce7;--accent2:#a29bfe;--green:#00b894;--orange:#fdcb6e;--red:#fd7979;--blue:#74b9ff}
@@ -225,10 +220,13 @@ export default function Home() {
         .loading{text-align:center;padding:40px}
         .loading p{color:var(--text2);font-size:13px}
         .video-bg{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;opacity:.35}
-        .music-btn{position:fixed;top:20px;right:20px;z-index:100;width:44px;height:44px;border-radius:50%;background:rgba(108,92,231,.8);border:2px solid rgba(162,155,254,.5);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.3)}
-        .music-btn:hover{background:rgba(108,92,231,1);transform:scale(1.1)}
-        .music-btn.playing{animation:pulse-ring 2s ease-out infinite}
-        @keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(108,92,231,.5)}70%{box-shadow:0 0 0 10px rgba(108,92,231,0)}100%{box-shadow:0 0 0 0 rgba(108,92,231,0)}}
+        .music-btn{position:fixed;top:20px;right:20px;z-index:100;display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:20px;background:rgba(0,0,0,.55);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:13px;cursor:pointer;transition:all .3s;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+        .music-btn:hover{background:rgba(0,0,0,.7);border-color:rgba(255,255,255,.3)}
+        .music-note{font-size:15px}
+        .music-label{font-weight:500}
+        .music-play{font-size:11px;opacity:.8}
+        .music-btn.playing .music-note{animation:note-bounce 1s ease infinite}
+        @keyframes note-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
       `}</style>
 
       <div className="container">
