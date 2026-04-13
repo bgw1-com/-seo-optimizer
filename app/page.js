@@ -148,7 +148,7 @@ export default function Home() {
 
   return (
     <>
-      {/* <video ref={videoRef} className="video-bg" src="/bg-video.mp4" autoPlay loop muted playsInline /> */}
+      <video ref={videoRef} className="video-bg" src="/bg-video.mp4" autoPlay loop muted playsInline />
       <audio ref={audioRef} src="/bg-music.mp3" loop preload="auto" />
       <button className={`music-btn ${playing ? 'playing' : ''}`} onClick={toggleMusic}>
         <span className="music-note">♪</span>
