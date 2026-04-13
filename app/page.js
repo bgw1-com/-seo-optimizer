@@ -230,7 +230,7 @@ export default function Home() {
 
       <div className="container">
         <div className="header">
-          <h1>📝 SEO <span>文章优化助手</span></h1>
+          <h1><img src="/logo.gif" alt="logo" style={{height:'40px',verticalAlign:'middle',marginRight:'8px',borderRadius:'50%'}} />大德 SEO <span>文章优化助手</span></h1>
           <p>输入文章标题和内容，AI 将为您提供全面的 SEO 优化建议</p>
         </div>
 
