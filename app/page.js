@@ -76,26 +76,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
-  const [playing, setPlaying] = useState(false);
-  const videoRef = useRef(null);
-  const audioRef = useRef(null);
-
-  // 视频自动静音播放
-  useEffect(() => {
-    const v = videoRef.current;
-    if (v) { v.muted = true; v.play().catch(() => {}); }
-  }, []);
-
-  const toggleMusic = useCallback(() => {
-    const a = audioRef.current;
-    if (!a) return;
-    if (a.paused) {
-      a.play().then(() => setPlaying(true)).catch(() => {});
-    } else {
-      a.pause();
-      setPlaying(false);
-    }
-  }, []);
+  // 视频背景和音乐暂时移除，测试部署更新
 
   function showToast(msg) {
     setToast(msg);
@@ -149,13 +130,7 @@ export default function Home() {
 
   return (
     <>
-      <video ref={videoRef} className="video-bg" src="/bg-video.mp4" autoPlay loop muted playsInline />
-      <audio ref={audioRef} src="/bg-music.mp3" loop preload="auto" />
-      <button className={`music-btn ${playing ? 'playing' : ''}`} onClick={toggleMusic}>
-        <span className="music-note">♪</span>
-        <span className="music-label">音乐</span>
-        <span className="music-play">{playing ? '❚❚' : '▶'}</span>
-      </button>
+      {/* 视频背景和音乐按钮暂时移除 */}
       <style>{`
         :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#242836;--border:#2e3345;--text:#e4e6ed;--text2:#9498a8;--accent:#6c5ce7;--accent2:#a29bfe;--green:#00b894;--orange:#fdcb6e;--red:#fd7979;--blue:#74b9ff}
         *{margin:0;padding:0;box-sizing:border-box}
@@ -231,7 +206,7 @@ export default function Home() {
 
       <div className="container">
         <div className="header">
-          <h1>📝 SEO <span>文章优化助手</span></h1>
+          <h1>📝 SEO <span>文章优化助手 v2</span></h1>
           <p>输入文章标题和内容，AI 将为您提供全面的 SEO 优化建议</p>
         </div>
 
