@@ -3,11 +3,114 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 
 const MODELS = {
   openai: [
-    { value: 'gpt-5.4', label: 'GPT-5.4 (最新)' },
-    { value: 'gpt-5.4-mini', label: 'GPT-5.4 Mini' },
-    { value: 'gpt-5.3', label: 'GPT-5.3' },
-    { value: 'gpt-4.1', label: 'GPT-4.1' },
+    { value: 'gpt-5.4', label: 'GPT-5.4 (Latest)', labelZh: 'GPT-5.4 (最新)' },
+    { value: 'gpt-5.4-mini', label: 'GPT-5.4 Mini', labelZh: 'GPT-5.4 Mini' },
+    { value: 'gpt-5.3', label: 'GPT-5.3', labelZh: 'GPT-5.3' },
+    { value: 'gpt-4.1', label: 'GPT-4.1', labelZh: 'GPT-4.1' },
   ],
+};
+
+const I18N = {
+  zh: {
+    title1: '大德 SEO ',
+    title2: '文章优化助手',
+    subtitle: '输入文章标题和内容，AI 将为您提供全面的 SEO 优化建议',
+    model: '模型：',
+    language: '语言：',
+    zh: '中文',
+    en: 'English',
+    input: '📄 输入内容',
+    clear: '清空',
+    example: '示例',
+    articleTitle: '文章标题',
+    articleTitlePh: '输入文章标题...',
+    keywords: '目标关键词（可选，逗号分隔）',
+    keywordsPh: '例如：健康饮食, 减肥方法, 营养搭配',
+    content: '文章内容',
+    contentPh: '粘贴或输入文章内容...',
+    chars: '字',
+    articleType: '文章类型',
+    types: {
+      story: '成人小说/故事',
+      venue: '场所推荐/攻略',
+      news: '资讯/新闻',
+      guide: '生活指南/科普',
+      review: '测评/体验',
+      listicle: '榜单/合集',
+      community: '社区/交友',
+    },
+    analyzing: '⏳ 分析中...',
+    start: '🚀 开始 SEO 优化分析',
+    result: '✨ 优化结果',
+    tabs: { overview: '总览', titles: '标题', meta: 'Meta', keywords: '关键词', suggestions: '建议' },
+    aiAnalyzing: 'AI 正在分析您的文章...',
+    aiWait: '通常需要 10-30 秒',
+    placeholder: ['在左侧输入文章标题和内容', '点击「开始 SEO 优化分析」查看结果'],
+    scores: { overall: '综合评分', title: '标题评分', readability: '可读性', keyword_usage: '关键词使用', structure: '结构评分' },
+    titleAnalysis: '📊 标题分析',
+    structSuggest: '📐 结构建议',
+    wordCount: '📏 字数建议',
+    optimizedTitles: '🏷️ 优化标题建议',
+    metaDesc: '📝 Meta Description',
+    metaVariants: '🔄 描述变体',
+    kwPrimary: '🎯 主要关键词',
+    kwSecondary: '📌 次要关键词',
+    kwLongTail: '🔗 长尾关键词',
+    contentSuggest: '💡 内容优化建议',
+    copied: '已复制到剪贴板',
+    needInput: '请至少输入文章标题或内容',
+    music: '音乐',
+  },
+  en: {
+    title1: 'Daqi SEO ',
+    title2: 'Article Optimizer',
+    subtitle: 'Enter your article title and content — AI will provide comprehensive SEO optimization suggestions',
+    model: 'Model:',
+    language: 'Language:',
+    zh: '中文',
+    en: 'English',
+    input: '📄 Input',
+    clear: 'Clear',
+    example: 'Example',
+    articleTitle: 'Article Title',
+    articleTitlePh: 'Enter article title...',
+    keywords: 'Target Keywords (optional, comma separated)',
+    keywordsPh: 'e.g. healthy eating, weight loss, nutrition',
+    content: 'Article Content',
+    contentPh: 'Paste or type your article content...',
+    chars: 'chars',
+    articleType: 'Article Type',
+    types: {
+      story: 'Adult Story / Fiction',
+      venue: 'Venue Guide / Recommendation',
+      news: 'News / Updates',
+      guide: 'Lifestyle Guide / How-To',
+      review: 'Review / Experience',
+      listicle: 'Listicle / Roundup',
+      community: 'Community / Social',
+    },
+    analyzing: '⏳ Analyzing...',
+    start: '🚀 Start SEO Optimization',
+    result: '✨ Results',
+    tabs: { overview: 'Overview', titles: 'Titles', meta: 'Meta', keywords: 'Keywords', suggestions: 'Tips' },
+    aiAnalyzing: 'AI is analyzing your article...',
+    aiWait: 'Usually takes 10–30 seconds',
+    placeholder: ['Enter your article title and content on the left', 'Click "Start SEO Optimization" to see results'],
+    scores: { overall: 'Overall', title: 'Title', readability: 'Readability', keyword_usage: 'Keywords', structure: 'Structure' },
+    titleAnalysis: '📊 Title Analysis',
+    structSuggest: '📐 Structure Suggestions',
+    wordCount: '📏 Word Count Advice',
+    optimizedTitles: '🏷️ Optimized Title Suggestions',
+    metaDesc: '📝 Meta Description',
+    metaVariants: '🔄 Description Variants',
+    kwPrimary: '🎯 Primary Keywords',
+    kwSecondary: '📌 Secondary Keywords',
+    kwLongTail: '🔗 Long-Tail Keywords',
+    contentSuggest: '💡 Content Optimization Tips',
+    copied: 'Copied to clipboard',
+    needInput: 'Please enter at least a title or content',
+    music: 'Music',
+  },
 };
 
 function buildPrompt(title, content, keywords, articleType, lang) {
@@ -96,6 +199,8 @@ export default function Home() {
   const videoRef = useRef(null);
   const audioRef = useRef(null);
 
+  const t = I18N[lang];
+
   useEffect(() => {
     const v = videoRef.current;
     if (v) { v.muted = true; v.playbackRate = 1.0; v.play().catch(() => {}); }
@@ -118,17 +223,23 @@ export default function Home() {
   }
 
   function copy(text) {
-    navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板'));
+    navigator.clipboard.writeText(text).then(() => showToast(t.copied));
   }
 
   function loadExample() {
-    setTitle('2026年全国GAY友好场所推荐指南');
-    setContent('随着社会观念的进步，越来越多的城市出现了对GAY群体友好的社交场所。本文整理了2026年最受欢迎的GAY友好场所，涵盖酒吧、咖啡厅、健身房等多种类型。\n\n一、北京地区\n北京作为首都，拥有最丰富的GAY友好场所资源。三里屯、工体周边是传统的聚集区域，近年来五道口、望京等区域也涌现出不少新去处。\n\n二、上海地区\n上海的开放氛围使得GAY场所文化更加多元。从安福路的精品咖啡店到外滩的高端酒吧，选择非常丰富。\n\n三、成都地区\n成都以其包容的城市文化著称，太古里、九眼桥周边是年轻人最爱的社交区域。\n\n四、出行建议\n选择场所时建议提前通过社交平台了解最新信息，注意安全社交。');
-    setKeywords('GAY友好场所, 同志酒吧, GAY社交');
+    if (lang === 'zh') {
+      setTitle('2026年全国GAY友好场所推荐指南');
+      setContent('随着社会观念的进步，越来越多的城市出现了对GAY群体友好的社交场所。本文整理了2026年最受欢迎的GAY友好场所，涵盖酒吧、咖啡厅、健身房等多种类型。\n\n一、北京地区\n北京作为首都，拥有最丰富的GAY友好场所资源。三里屯、工体周边是传统的聚集区域，近年来五道口、望京等区域也涌现出不少新去处。\n\n二、上海地区\n上海的开放氛围使得GAY场所文化更加多元。从安福路的精品咖啡店到外滩的高端酒吧，选择非常丰富。\n\n三、成都地区\n成都以其包容的城市文化著称，太古里、九眼桥周边是年轻人最爱的社交区域。\n\n四、出行建议\n选择场所时建议提前通过社交平台了解最新信息，注意安全社交。');
+      setKeywords('GAY友好场所, 同志酒吧, GAY社交');
+    } else {
+      setTitle('2026 Guide to Gay-Friendly Venues Across the US');
+      setContent('As social attitudes progress, more cities are opening welcoming spaces for the gay community. This guide covers the most popular gay-friendly venues of 2026, including bars, cafes, and gyms.\n\n1. New York\nAs a cultural hub, NYC offers the richest selection of gay-friendly spots. Chelsea and Hell\'s Kitchen remain classic areas, while Bushwick and Astoria have emerged as new favorites.\n\n2. Los Angeles\nLA\'s open atmosphere has made its scene more diverse than ever. From boutique cafes in West Hollywood to rooftop bars downtown, the options are endless.\n\n3. Chicago\nKnown for its inclusive culture, Boystown and Andersonville remain beloved by young travelers.\n\n4. Travel Tips\nBefore visiting, check the latest info on social platforms and practice safe social etiquette.');
+      setKeywords('gay friendly venues, gay bars, LGBTQ social');
+    }
   }
 
   async function optimize() {
-    if (!title && !content) { setError('请至少输入文章标题或内容'); return; }
+    if (!title && !content) { setError(t.needInput); return; }
     setLoading(true); setError(''); setResult(null);
 
     try {
@@ -139,7 +250,7 @@ export default function Home() {
         body: JSON.stringify({ model, prompt }),
       });
       const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'API 请求失败');
+      if (!resp.ok) throw new Error(data.error || 'API request failed');
 
       let text = data.result.trim();
       const m = text.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -160,7 +271,6 @@ export default function Home() {
   }
 
   const tabs = ['overview', 'titles', 'meta', 'keywords', 'suggestions'];
-  const tabLabels = { overview: '总览', titles: '标题', meta: 'Meta', keywords: '关键词', suggestions: '建议' };
 
   return (
     <>
@@ -168,7 +278,7 @@ export default function Home() {
       <audio ref={audioRef} src="/bg-music.mp3" loop preload="auto" />
       <button className={`music-btn ${playing ? 'playing' : ''}`} onClick={toggleMusic}>
         <span className="music-note">♪</span>
-        <span className="music-label">音乐</span>
+        <span className="music-label">{t.music}</span>
         <span className="music-play">{playing ? '❚❚' : '▶'}</span>
       </button>
       <style>{`
@@ -246,19 +356,19 @@ export default function Home() {
 
       <div className="container">
         <div className="header">
-          <h1><img src="/logo.gif" alt="logo" style={{height:'40px',verticalAlign:'middle',marginRight:'8px',borderRadius:'50%'}} />大德 SEO <span>文章优化助手</span></h1>
-          <p>输入文章标题和内容，AI 将为您提供全面的 SEO 优化建议</p>
+          <h1><img src="/logo.gif" alt="logo" style={{height:'40px',verticalAlign:'middle',marginRight:'8px',borderRadius:'50%'}} />{t.title1}<span>{t.title2}</span></h1>
+          <p>{t.subtitle}</p>
         </div>
 
         <div className="settings-bar">
-          <label>模型：</label>
+          <label>{t.model}</label>
           <select value={model} onChange={e => setModel(e.target.value)}>
-            {MODELS[provider].map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+            {MODELS[provider].map(m => <option key={m.value} value={m.value}>{lang === 'zh' ? m.labelZh : m.label}</option>)}
           </select>
-          <label>语言：</label>
+          <label>{t.language}</label>
           <div className="lang-chips">
-            <span className={`lang-chip ${lang==='zh'?'active':''}`} onClick={() => setLang('zh')}>中文</span>
-            <span className={`lang-chip ${lang==='en'?'active':''}`} onClick={() => setLang('en')}>English</span>
+            <span className={`lang-chip ${lang==='zh'?'active':''}`} onClick={() => setLang('zh')}>{I18N.zh.zh}</span>
+            <span className={`lang-chip ${lang==='en'?'active':''}`} onClick={() => setLang('en')}>{I18N.en.en}</span>
           </div>
         </div>
 
@@ -266,41 +376,35 @@ export default function Home() {
           {/* Left: Input */}
           <div className="panel">
             <div className="panel-header">
-              <h2>📄 输入内容</h2>
+              <h2>{t.input}</h2>
               <div className="btn-group">
-                <button className="btn btn-sm btn-secondary" onClick={() => { setTitle(''); setContent(''); setKeywords(''); }}>清空</button>
-                <button className="btn btn-sm btn-secondary" onClick={loadExample}>示例</button>
+                <button className="btn btn-sm btn-secondary" onClick={() => { setTitle(''); setContent(''); setKeywords(''); }}>{t.clear}</button>
+                <button className="btn btn-sm btn-secondary" onClick={loadExample}>{t.example}</button>
               </div>
             </div>
             <div className="panel-body">
               <div className="field">
-                <label>文章标题</label>
-                <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="输入文章标题..." maxLength={200} />
+                <label>{t.articleTitle}</label>
+                <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder={t.articleTitlePh} maxLength={200} />
                 <div className="char-count">{title.length}/200</div>
               </div>
               <div className="field">
-                <label>目标关键词（可选，逗号分隔）</label>
-                <input type="text" value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="例如：健康饮食, 减肥方法, 营养搭配" />
+                <label>{t.keywords}</label>
+                <input type="text" value={keywords} onChange={e => setKeywords(e.target.value)} placeholder={t.keywordsPh} />
               </div>
               <div className="field">
-                <label>文章内容</label>
-                <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="粘贴或输入文章内容..." rows={10} />
-                <div className="char-count">{content.length} 字</div>
+                <label>{t.content}</label>
+                <textarea value={content} onChange={e => setContent(e.target.value)} placeholder={t.contentPh} rows={10} />
+                <div className="char-count">{content.length} {t.chars}</div>
               </div>
               <div className="field">
-                <label>文章类型</label>
+                <label>{t.articleType}</label>
                 <select value={articleType} onChange={e => setArticleType(e.target.value)}>
-                  <option value="story">成人小说/故事</option>
-                  <option value="venue">场所推荐/攻略</option>
-                  <option value="news">资讯/新闻</option>
-                  <option value="guide">生活指南/科普</option>
-                  <option value="review">测评/体验</option>
-                  <option value="listicle">榜单/合集</option>
-                  <option value="community">社区/交友</option>
+                  {Object.entries(t.types).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </div>
               <button className="btn btn-primary" onClick={optimize} disabled={loading} style={{width:'100%',justifyContent:'center'}}>
-                {loading ? '⏳ 分析中...' : '🚀 开始 SEO 优化分析'}
+                {loading ? t.analyzing : t.start}
               </button>
             </div>
           </div>
@@ -308,10 +412,10 @@ export default function Home() {
           {/* Right: Results */}
           <div className="panel">
             <div className="panel-header">
-              <h2>✨ 优化结果</h2>
+              <h2>{t.result}</h2>
               <div className="tabs">
-                {tabs.map(t => (
-                  <button key={t} className={`tab ${tab===t?'active':''}`} onClick={() => setTab(t)}>{tabLabels[t]}</button>
+                {tabs.map(tk => (
+                  <button key={tk} className={`tab ${tab===tk?'active':''}`} onClick={() => setTab(tk)}>{t.tabs[tk]}</button>
                 ))}
               </div>
             </div>
@@ -320,39 +424,39 @@ export default function Home() {
               {loading && (
                 <div className="loading">
                   <div className="spinner" />
-                  <p>AI 正在分析您的文章...</p>
-                  <p style={{marginTop:8,fontSize:12}}>通常需要 10-30 秒</p>
+                  <p>{t.aiAnalyzing}</p>
+                  <p style={{marginTop:8,fontSize:12}}>{t.aiWait}</p>
                 </div>
               )}
               {!result && !loading && !error && (
                 <div className="placeholder">
                   <div className="icon">🔍</div>
-                  <p>在左侧输入文章标题和内容<br/>点击「开始 SEO 优化分析」查看结果</p>
+                  <p>{t.placeholder[0]}<br/>{t.placeholder[1]}</p>
                 </div>
               )}
 
               {result && tab === 'overview' && (
                 <>
                   <div className="score-grid">
-                    <ScoreCard value={result.scores.overall} label="综合评分" />
-                    <ScoreCard value={result.scores.title} label="标题评分" />
-                    <ScoreCard value={result.scores.readability} label="可读性" />
-                    <ScoreCard value={result.scores.keyword_usage} label="关键词使用" />
-                    <ScoreCard value={result.scores.structure} label="结构评分" />
+                    <ScoreCard value={result.scores.overall} label={t.scores.overall} />
+                    <ScoreCard value={result.scores.title} label={t.scores.title} />
+                    <ScoreCard value={result.scores.readability} label={t.scores.readability} />
+                    <ScoreCard value={result.scores.keyword_usage} label={t.scores.keyword_usage} />
+                    <ScoreCard value={result.scores.structure} label={t.scores.structure} />
                   </div>
-                  <div className="result-section"><h3>📊 标题分析</h3><div className="meta-box">{result.title_analysis}</div></div>
-                  <div className="result-section"><h3>📐 结构建议</h3><div className="meta-box">{result.structure_suggestions}</div></div>
-                  <div className="result-section"><h3>📏 字数建议</h3><div className="meta-box">{result.word_count_advice}</div></div>
+                  <div className="result-section"><h3>{t.titleAnalysis}</h3><div className="meta-box">{result.title_analysis}</div></div>
+                  <div className="result-section"><h3>{t.structSuggest}</h3><div className="meta-box">{result.structure_suggestions}</div></div>
+                  <div className="result-section"><h3>{t.wordCount}</h3><div className="meta-box">{result.word_count_advice}</div></div>
                 </>
               )}
 
               {result && tab === 'titles' && (
                 <div className="result-section">
-                  <h3>🏷️ 优化标题建议</h3>
-                  {(result.optimized_titles||[]).map((t,i) => (
-                    <div key={i} className="title-option" onClick={() => copy(t)}>
+                  <h3>{t.optimizedTitles}</h3>
+                  {(result.optimized_titles||[]).map((x,i) => (
+                    <div key={i} className="title-option" onClick={() => copy(x)}>
                       <span className="num">{i+1}</span>
-                      <span className="title-text">{t}</span>
+                      <span className="title-text">{x}</span>
                     </div>
                   ))}
                 </div>
@@ -361,12 +465,12 @@ export default function Home() {
               {result && tab === 'meta' && (
                 <>
                   <div className="result-section">
-                    <h3>📝 Meta Description</h3>
+                    <h3>{t.metaDesc}</h3>
                     <div className="meta-box" onClick={() => copy(result.meta_description)}>{result.meta_description}</div>
                   </div>
                   {result.meta_description_variants?.length > 0 && (
                     <div className="result-section">
-                      <h3>🔄 描述变体</h3>
+                      <h3>{t.metaVariants}</h3>
                       {result.meta_description_variants.map((v,i) => (
                         <div key={i} className="meta-box" onClick={() => copy(v)}>{v}</div>
                       ))}
@@ -378,15 +482,15 @@ export default function Home() {
               {result && tab === 'keywords' && (
                 <>
                   <div className="result-section">
-                    <h3>🎯 主要关键词</h3>
+                    <h3>{t.kwPrimary}</h3>
                     <div className="keyword-tags">{(result.extracted_keywords?.primary||[]).map((k,i) => <span key={i} className="keyword-tag" style={{background:'rgba(108,92,231,.15)',color:'var(--accent2)'}}>{k}</span>)}</div>
                   </div>
                   <div className="result-section">
-                    <h3>📌 次要关键词</h3>
+                    <h3>{t.kwSecondary}</h3>
                     <div className="keyword-tags">{(result.extracted_keywords?.secondary||[]).map((k,i) => <span key={i} className="keyword-tag" style={{background:'rgba(0,184,148,.15)',color:'var(--green)'}}>{k}</span>)}</div>
                   </div>
                   <div className="result-section">
-                    <h3>🔗 长尾关键词</h3>
+                    <h3>{t.kwLongTail}</h3>
                     <div className="keyword-tags">{(result.extracted_keywords?.long_tail||[]).map((k,i) => <span key={i} className="keyword-tag" style={{background:'rgba(116,185,255,.15)',color:'var(--blue)'}}>{k}</span>)}</div>
                   </div>
                 </>
@@ -394,7 +498,7 @@ export default function Home() {
 
               {result && tab === 'suggestions' && (
                 <div className="result-section">
-                  <h3>💡 内容优化建议</h3>
+                  <h3>{t.contentSuggest}</h3>
                   <ul className="suggestions-list">
                     {(result.content_suggestions||[]).map((s,i) => <li key={i}>▸ {s}</li>)}
                   </ul>
