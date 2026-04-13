@@ -360,18 +360,6 @@ export default function Home() {
           <p>{t.subtitle}</p>
         </div>
 
-        <div className="settings-bar">
-          <label>{t.model}</label>
-          <select value={model} onChange={e => setModel(e.target.value)}>
-            {MODELS[provider].map(m => <option key={m.value} value={m.value}>{lang === 'zh' ? m.labelZh : m.label}</option>)}
-          </select>
-          <label>{t.language}</label>
-          <div className="lang-chips">
-            <span className={`lang-chip ${lang==='zh'?'active':''}`} onClick={() => setLang('zh')}>{I18N.zh.zh}</span>
-            <span className={`lang-chip ${lang==='en'?'active':''}`} onClick={() => setLang('en')}>{I18N.en.en}</span>
-          </div>
-        </div>
-
         <div className="main">
           {/* Left: Input */}
           <div className="panel">
