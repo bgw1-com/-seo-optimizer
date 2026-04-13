@@ -98,7 +98,7 @@ export default function Home() {
 
   useEffect(() => {
     const v = videoRef.current;
-    if (v) { v.muted = true; v.playbackRate = 0.3; v.play().catch(() => {}); }
+    if (v) { v.muted = true; v.playbackRate = 1.0; v.play().catch(() => {}); }
   }, []);
 
   const toggleMusic = useCallback(() => {
