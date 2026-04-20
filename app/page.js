@@ -2,11 +2,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 const MODELS = {
-  openai: [
-    { value: 'gpt-5.4', label: 'GPT-5.4 (Latest)', labelZh: 'GPT-5.4 (最新)' },
-    { value: 'gpt-5.4-mini', label: 'GPT-5.4 Mini', labelZh: 'GPT-5.4 Mini' },
-    { value: 'gpt-5.3', label: 'GPT-5.3', labelZh: 'GPT-5.3' },
-    { value: 'gpt-4.1', label: 'GPT-4.1', labelZh: 'GPT-4.1' },
+  xai: [
+    { value: 'grok-3', label: 'Grok-3 (最新)' },
+    { value: 'grok-3-mini', label: 'Grok-3 Mini' },
+    { value: 'grok-2', label: 'Grok-2' },
   ],
 };
 
@@ -183,8 +182,8 @@ function ScoreCard({ value, label }) {
 }
 
 export default function Home() {
-  const [provider, setProvider] = useState('openai');
-  const [model, setModel] = useState('gpt-5.4');
+  const [provider, setProvider] = useState('xai');
+  const [model, setModel] = useState('grok-3');
   const [lang, setLang] = useState('zh');
   const [title, setTitle] = useState('');
   const [keywords, setKeywords] = useState('');

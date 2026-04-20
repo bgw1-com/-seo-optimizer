@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const ENDPOINT = 'https://api.openai.com/v1/chat/completions';
+const XAI_API_KEY = process.env.XAI_API_KEY;
+const ENDPOINT = 'https://api.x.ai/v1/chat/completions';
 
 // 模型 fallback 列表：如果第一个不可用，尝试下一个
-const MODEL_FALLBACKS = ['gpt-5.4', 'gpt-4.1', 'gpt-4o', 'gpt-4o-mini'];
+const MODEL_FALLBACKS = ['grok-3', 'grok-3-mini', 'grok-2'];
 
 // 简单的速率限制：每个 IP 每分钟最多 10 次请求
 const rateLimit = new Map();
@@ -23,12 +23,12 @@ function checkRateLimit(ip) {
   return true;
 }
 
-async function callOpenAI(model, prompt) {
+async function callGrok(model, prompt) {
   const resp = await fetch(ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENAI_API_KEY}`,
+      'Authorization': `Bearer ${XAI_API_KEY}`,
     },
     body: JSON.stringify({
       model,
@@ -58,8 +58,8 @@ export async function POST(request) {
       return NextResponse.json({ error: '缺少必要参数' }, { status: 400 });
     }
 
-    if (!OPENAI_API_KEY) {
-      return NextResponse.json({ error: '未配置 OpenAI API Key，请联系管理员' }, { status: 500 });
+    if (!XAI_API_KEY) {
+      return NextResponse.json({ error: '未配置 xAI API Key，请联系管理员' }, { status: 500 });
     }
 
     // 先用用户选的模型，失败则尝试 fallback
@@ -67,7 +67,7 @@ export async function POST(request) {
     let lastError = '';
 
     for (const tryModel of modelsToTry) {
-      const result = await callOpenAI(tryModel, prompt);
+      const result = await callGrok(tryModel, prompt);
 
       if (result.ok) {
         try {
